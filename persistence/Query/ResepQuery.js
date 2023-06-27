@@ -69,7 +69,12 @@ class ResepQuery {
     JOIN personalisasi ON resep_personalisasi.personalisasi_id = personalisasi.id
     JOIN resep_alatmasak ON resep.id = resep_alatmasak.resep_id
     JOIN alatmasak ON resep_alatmasak.alatmasak_id = alatmasak.id
-    WHERE personalisasi.id = $1
+    WHERE resep.id IN (
+        SELECT DISTINCT resep_id
+        FROM resep_personalisasi
+        JOIN personalisasi ON resep_personalisasi.personalisasi_id = personalisasi.id
+        WHERE personalisasi.id = ANY($1::int[])
+    )
     Group by
     resep.id,
     resep.nama_resep,
@@ -83,6 +88,39 @@ class ResepQuery {
     bahan.tipe_bahan,
     tagBahan.nama_tag,
     personalisasi.nama_personalisasi`
+
+    static QueryGetResepBySearchBahan=`
+    SELECT resep.id, resep.nama_resep, resep.saran_penyajian, resep.langkah_masak, resep.estimasi, resep.jml_alat, 
+    alatmasak.alat_masak, 
+    bahan.jumlah, bahan.satuan, bahan.tipe_bahan,
+    tagBahan.nama_tag, 
+    personalisasi.nama_personalisasi 
+    FROM resep 
+    JOIN bahan ON resep.id = bahan.resep_id 
+    JOIN tagBahan ON bahan.tagBahan_id = tagBahan.id 
+    JOIN resep_personalisasi ON resep.id = resep_personalisasi.resep_id
+    JOIN personalisasi ON resep_personalisasi.personalisasi_id = personalisasi.id
+    JOIN resep_alatmasak ON resep.id = resep_alatmasak.resep_id
+    JOIN alatmasak ON resep_alatmasak.alatmasak_id = alatmasak.id
+    WHERE resep.id IN (
+        SELECT DISTINCT resep_id
+        FROM bahan
+        JOIN tagBahan ON bahan.tagBahan_id = tagBahan.id
+        WHERE tagBahan.kode = ANY($1::text[])
+    )
+    Group by
+    resep.id,
+    resep.nama_resep,
+    resep.saran_penyajian,
+    resep.langkah_masak,
+    resep.estimasi,
+    resep.jml_alat,
+    alatmasak.alat_masak,
+    bahan.jumlah,
+    bahan.satuan,
+    bahan.tipe_bahan,
+    tagBahan.nama_tag,
+    personalisasi.nama_personalisasi` 
 }
 
 

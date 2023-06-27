@@ -33,6 +33,16 @@ class ResepController {
         }
     }
 
+    static async getResepBySearchBahan (req, res) {
+        console.log("berhasil3")
+        var results = await resep.getResepBySearchBahan(req);
+        console.log("berhasil4")
+
+        if (results) {
+            res.send(results);
+        }
+    }
+
 }
 
 module.exports = ResepController
